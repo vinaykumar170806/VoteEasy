@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoteEasy - Enhanced Polling App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        header {
+            background: #4a00e0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 15px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid #4a00e0;
+            color: #4a00e0;
+        }
+        
+        .tab-content {
+            padding: 25px;
+        }
+        
+        .content {
+            display: none;
+        }
+        
+        .content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #4a00e0;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #3575fc;
+        }
+        
+        .option-input {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .option-input input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .poll-list {
+            margin-top: 20px;
+        }
+        
+        .poll-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        
+        .poll-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .poll-title {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .poll-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .poll-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .delete-poll {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #dc3545;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .vote-options {
+            margin: 20px 0;
+        }
+        
+        .vote-option {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .vote-option:hover {
+            background: #e9ecef;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            margin-bottom: 15px;
+        }
+        
+        .result-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .result-bar {
+            height: 30px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .result-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a00e0, #8e2de2);
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .chart-container {
+            margin-top: 30px;
+            position: relative;
+            height: 300px;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .secondary-btn {
+            background: #6c757d;
+        }
+        
+        .secondary-btn:hover {
+            background: #5a6268;
+        }
+        
+        .danger-btn {
+            background: #dc3545;
+        }
+        
+        .danger-btn:hover {
+            background: #c82333;
+        }
+        
+        .success-alert {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .back-button {
+            margin-top: 20px;
+            display: block;
+        }
+        
+        .voting-type {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .voting-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .voting-option:hover {
+            background: #e9ecef;
+        }
+        
+        .voting-option input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .voting-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+            flex: 1;
+        }
+        
+        .voting-type-heading {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tab {
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+            
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .poll-meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .voting-option {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-vote-yea"></i> VoteEasy</h1>
+            <p>Create and participate in polls instantly</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="vote">Vote</div>
+            <div class="tab" data-tab="create">Create Poll</div>
+            <div class="tab" data-tab="results">Results</div>
+        </div>
+        
+        <div class="tab-content">
+            <!-- Vote Tab -->
+            <div class="content active" id="vote-content">
+                <h2>Active Polls</h2>
+                <div class="poll-list" id="poll-list">
+                    <!-- Poll items will be dynamically added here -->
+                </div>
+            </div>
+            
+            <!-- Create Tab -->
+            <div class="content" id="create-content">
+                <h2>Create New Poll</h2>
+                <div class="success-alert" id="create-success">
+                    Poll created successfully!
+                </div>
+                <div class="form-group">
+                    <label for="poll-title">Poll Question</label>
+                    <input type="text" id="poll-title" placeholder="Enter your question">
+                </div>
+                <div class="form-group">
+                    <label for="poll-description">Description (optional)</label>
+                    <textarea id="poll-description" placeholder="Describe your poll" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <div class="voting-type-heading">Voting Type</div>
+                    <div class="voting-type">
+                        <div class="voting-option" onclick="document.getElementById('single-vote').click()">
+                            <input type="radio" id="single-vote" name="voting-type" value="single" checked>
+                            <label for="single-vote">Single Vote (Users can vote only once)</label>
+                        </div>
+                        <div class="voting-option" onclick="document.getElementById('multiple-vote').click()">
+                            <input type="radio" id="multiple-vote" name="voting-type" value="multiple">
+                            <label for="multiple-vote">Multiple Votes (Users can vote multiple times)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Options</label>
+                    <div id="poll-options">
+                        <div class="option-input">
+                            <input type="text" placeholder="Option 1">
+                            <button type="button" class="secondary-btn" onclick="removeOption(this)"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="option-input">
+                            <input type="text" placeholder="Option 2">
+                            <button type="button" class="secondary-btn" onclick="removeOption(this)"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <button type="button" class="secondary-btn" onclick="addOption()" style="margin-top: 10px;">
+                        <i class="fas fa-plus"></i> Add Option
+                    </button>
+                </div>
+                <button onclick="createPoll()">Create Poll</button>
+            </div>
+            
+            <!-- Results Tab -->
+            <div class="content" id="results-content">
+                <h2>Poll Results</h2>
+                <div id="results-container">
+                    <!-- Results will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage (simulating a database)
+        let polls = JSON.parse(localStorage.getItem('polls')) || [
+            {
+                id: 1,
+                question: "Which programming language do you prefer?",
+                description: "Select your favorite language for web development",
+                options: [
+                    { text: "JavaScript", votes: 15 },
+                    { text: "Python", votes: 12 },
+                    { text: "Java", votes: 8 },
+                    { text: "C#", votes: 6 }
+                ],
+                votingType: "single",
+                voted: false
+            },
+            {
+                id: 2,
+                question: "What's your favorite frontend framework?",
+                description: "",
+                options: [
+                    { text: "React", votes: 20 },
+                    { text: "Vue", votes: 15 },
+                    { text: "Angular", votes: 10 },
+                    { text: "Svelte", votes: 8 }
+                ],
+                votingType: "multiple",
+                voted: false
+            }
+        ];
+        
+        // Current poll being viewed/voted on
+        let currentPollId = null;
+        let chart = null;
+        
+        // Initialize the app
+        function init() {
+            updatePollList();
+            setupTabNavigation();
+            showResults();
+        }
+        
+        // Set up tab navigation
+        function setupTabNavigation() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show corresponding content
+                    const tabName = tab.getAttribute('data-tab');
+                    document.querySelectorAll('.content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(`${tabName}-content`).classList.add('active');
+                    
+                    // If switching to results tab, update results
+                    if (tabName === 'results') {
+                        showResults();
+                    }
+                    
+                    // If switching to vote tab, update poll list
+                    if (tabName === 'vote') {
+                        resetPoll();
+                    }
+                });
+            });
+        }
+        
+        // Update the list of polls in the vote tab
+        function updatePollList() {
+            const pollList = document.getElementById('poll-list');
+            pollList.innerHTML = '';
+            
+            if (polls.length === 0) {
+                pollList.innerHTML = '<p>No polls available. Create one first!</p>';
+                return;
+            }
+            
+            polls.forEach(poll => {
+                const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0);
+                const pollItem = document.createElement('div');
+                pollItem.className = 'poll-item';
+                pollItem.innerHTML = `
+                    <button class="delete-poll" onclick="deletePoll(${poll.id}, event)"><i class="fas fa-trash"></i></button>
+                    <div class="poll-title">${poll.question}</div>
+                    <div class="poll-desc">${poll.description || 'No description'}</div>
+                    <div class="poll-meta">
+                        <span>${totalVotes} total votes</span>
+                        <span>${poll.votingType === 'single' ? 'Single vote' : 'Multiple votes'}</span>
+                    </div>
+                `;
+                pollItem.addEventListener('click', () => showPoll(poll.id));
+                pollList.appendChild(pollItem);
+            });
+        }
+        
+        // Show a specific poll for voting
+        function showPoll(pollId) {
+            currentPollId = pollId;
+            const poll = polls.find(p => p.id === pollId);
+            
+            const voteContent = document.getElementById('vote-content');
+            voteContent.innerHTML = `
+                <h2>${poll.question}</h2>
+                <p>${poll.description || ''}</p>
+                <div class="poll-meta">
+                    <span>Voting type: ${poll.votingType === 'single' ? 'Single vote' : 'Multiple votes'}</span>
+                </div>
+                
+                ${poll.voted && poll.votingType === 'single' ? `
+                    <div class="results">
+                        <h3>Results (You've already voted)</h3>
+                        <div class="result-chart">
+                            ${generateResultBars(poll)}
+                        </div>
+                    </div>
+                    <button class="back-button" onclick="resetPoll()"><i class="fas fa-arrow-left"></i> Back to Polls</button>
+                ` : `
+                    <div class="vote-options">
+                        ${poll.options.map(option => `
+                            <div class="vote-option" onclick="vote(${poll.options.indexOf(option)})">
+                                ${option.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="back-button" onclick="resetPoll()"><i class="fas fa-arrow-left"></i> Back to Polls</button>
+                `}
+            `;
+        }
+        
+        // Vote for an option in the current poll
+        function vote(optionIndex) {
+            const pollIndex = polls.findIndex(p => p.id === currentPollId);
+            const poll = polls[pollIndex];
+            
+            poll.options[optionIndex].votes++;
+            
+            // Mark as voted if it's a single vote poll
+            if (poll.votingType === 'single') {
+                poll.voted = true;
+            }
+            
+            // Update storage
+            localStorage.setItem('polls', JSON.stringify(polls));
+            
+            // Show the updated poll
+            showPoll(currentPollId);
+            
+            // Update results tab
+            showResults();
+        }
+        
+        // Delete a poll
+        function deletePoll(pollId, event) {
+            // Stop event propagation to prevent triggering the poll click event
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            if (confirm('Are you sure you want to delete this poll? This action cannot be undone.')) {
+                // Remove the poll from the array
+                polls = polls.filter(poll => poll.id !== pollId);
+                
+                // Update storage
+                localStorage.setItem('polls', JSON.stringify(polls));
+                
+                // Update the UI
+                updatePollList();
+                showResults();
+                
+                // If we were viewing the deleted poll, reset the view
+                if (currentPollId === pollId) {
+                    resetPoll();
+                }
+            }
+        }
+        
+        // Generate HTML for result bars
+        function generateResultBars(poll) {
+            const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0);
+            
+            return poll.options.map(option => {
+                const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100) : 0;
+                return `
+                    <div class="result-item">
+                        <div class="result-label">
+                            <span>${option.text}</span>
+                            <span>${option.votes} votes (${percentage}%)</span>
+                        </div>
+                        <div class="result-bar">
+                            <div class="result-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Reset the poll view to show the list of polls
+        function resetPoll() {
+            currentPollId = null;
+            const voteContent = document.getElementById('vote-content');
+            voteContent.innerHTML = `
+                <h2>Active Polls</h2>
+                <div class="poll-list" id="poll-list"></div>
+            `;
+            updatePollList();
+        }
+        
+        // Add a new option field when creating a poll
+        function addOption() {
+            const optionsContainer = document.getElementById('poll-options');
+            const optionCount = optionsContainer.children.length + 1;
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-input';
+            optionDiv.innerHTML = `
+                <input type="text" placeholder="Option ${optionCount}">
+                <button type="button" class="secondary-btn" onclick="removeOption(this)"><i class="fas fa-times"></i></button>
+            `;
+            optionsContainer.appendChild(optionDiv);
+        }
+        
+        // Remove an option field when creating a poll
+        function removeOption(button) {
+            if (document.getElementById('poll-options').children.length > 2) {
+                button.parentElement.remove();
+            }
+        }
+        
+        // Create a new poll
+        function createPoll() {
+            const question = document.getElementById('poll-title').value;
+            const description = document.getElementById('poll-description').value;
+            const votingType = document.querySelector('input[name="voting-type"]:checked').value;
+            const optionInputs = document.querySelectorAll('#poll-options input');
+            
+            if (!question) {
+                alert('Please enter a question for your poll');
+                return;
+            }
+            
+            const options = [];
+            optionInputs.forEach(input => {
+                if (input.value) {
+                    options.push({ text: input.value, votes: 0 });
+                }
+            });
+            
+            if (options.length < 2) {
+                alert('Please add at least two options');
+                return;
+            }
+            
+            // Create new poll object
+            const newPoll = {
+                id: polls.length > 0 ? Math.max(...polls.map(p => p.id)) + 1 : 1,
+                question,
+                description,
+                options,
+                votingType,
+                voted: false
+            };
+            
+            // Add to polls array
+            polls.push(newPoll);
+            
+            // Update storage
+            localStorage.setItem('polls', JSON.stringify(polls));
+            
+            // Show success message
+            const successAlert = document.getElementById('create-success');
+            successAlert.style.display = 'block';
+            
+            // Reset form
+            document.getElementById('poll-title').value = '';
+            document.getElementById('poll-description').value = '';
+            document.getElementById('single-vote').checked = true;
+            
+            const optionsContainer = document.getElementById('poll-options');
+            optionsContainer.innerHTML = `
+                <div class="option-input">
+                    <input type="text" placeholder="Option 1">
+                    <button type="button" class="secondary-btn" onclick="removeOption(this)"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="option-input">
+                    <input type="text" placeholder="Option 2">
+                    <button type="button" class="secondary-btn" onclick="removeOption(this)"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            
+            // Update poll list
+            updatePollList();
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                successAlert.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Show results in the results tab
+        function showResults() {
+            const resultsContainer = document.getElementById('results-container');
+            
+            if (polls.length === 0) {
+                resultsContainer.innerHTML = '<p>No polls available. Create one first!</p>';
+                return;
+            }
+            
+            resultsContainer.innerHTML = `
+                <h3>Overall Results</h3>
+                <div class="chart-container">
+                    <canvas id="results-chart"></canvas>
+                </div>
+                <div class="poll-results">
+                    ${polls.map(poll => `
+                        <div class="poll-result-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>${poll.question}</h4>
+                                <button class="danger-btn" onclick="deletePoll(${poll.id})"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                            <div class="result-bars">
+                                ${generateResultBars(poll)}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Render chart
+            renderChart();
+        }
+        
+        // Render chart for results
+        function renderChart() {
+            const ctx = document.getElementById('results-chart').getContext('2d');
+            
+            // Extract data for chart
+            const labels = [];
+            const data = [];
+            
+            polls.forEach(poll => {
+                const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0);
+                labels.push(poll.question);
+                data.push(totalVotes);
+            });
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Votes per Poll',
+                        data: data,
+                        backgroundColor: 'rgba(74, 0, 224, 0.7)',
+                        borderColor: 'rgba(74, 0, 224, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize the app when the page loads
+        window.onload = init;
+    </script>
+</body>
+</html>     
